@@ -61,9 +61,9 @@ streamlit run app.py
 
 ```
 doctalk/
-├── app.py              # Main Streamlit application
-├── process_documents.py # Document processing script
-├── query_data.py       # Query handling script
+├── ui.py              # Main Streamlit application
+├── create.py # Document processing script
+├── connect.py       # Query handling script
 ├── data/              # Directory for PDF documents
 ├── vectorstore/       # FAISS vector store
 
