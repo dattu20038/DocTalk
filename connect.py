@@ -11,7 +11,7 @@ from langchain_community.vectorstores import FAISS
 
 
 # Step 1: Setup LLM (Mistral with HuggingFace)
-HF_TOKEN = "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"
+HF_TOKEN = "your acess token here"
 HUGGINGFACE_REPO_ID="mistralai/Mistral-7B-Instruct-v0.3"
 
 def load_llm(huggingface_repo_id):
