@@ -4,7 +4,7 @@ from langchain.embeddings import HuggingFaceEmbeddings
 from langchain.chains import RetrievalQA
 from langchain_community.vectorstores import FAISS
 from langchain_core.prompts import PromptTemplate
-from langchain_huggingface import HuggingFaceEndpoint  # Use HuggingFaceEndpoint for DeepSeek
+from langchain_huggingface import HuggingFaceEndpoint  
 
 
 
@@ -50,9 +50,9 @@ def main():
         Start the answer directly. No small talk please.
         """
         
-        # DeepSeek Model Configuration
-        HUGGINGFACE_REPO_ID = "deepseek-ai/deepseek-coder-6.7b-instruct"  # Example DeepSeek model
-        HF_TOKEN = "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"  # Hugging Face API Token
+        
+        HUGGINGFACE_REPO_ID = "deepseek-ai/deepseek-coder-6.7b-instruct"  
+        HF_TOKEN = "your hugging face token"  
         
         try: 
             vectorstore = get_vectorstore()
