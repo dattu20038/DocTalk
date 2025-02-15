@@ -25,13 +25,11 @@ def set_custom_prompt(custom_prompt_template):
 def load_llm(huggingface_repo_id, HF_TOKEN=None):
     llm = HuggingFaceEndpoint(
         repo_id=huggingface_repo_id,
-        task="text2text-generation",  # Explicitly specify the task
+        task="text2text-generation", 
         temperature=0.5,
         model_kwargs={
             "max_length": 512,
-            "do_sample": True,
-            "top_p": 0.95,
-            "top_k": 50,
+            
         }
     )
     return llm
