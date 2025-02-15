@@ -4,9 +4,7 @@ from langchain.embeddings import HuggingFaceEmbeddings
 from langchain.chains import RetrievalQA
 from langchain_community.vectorstores import FAISS
 from langchain_core.prompts import PromptTemplate
-from langchain_huggingface import HuggingFaceEndpoint  
-
-
+from langchain_huggingface import HuggingFaceEndpoint
 
 DB_FAISS_PATH = "vectorstore/db_faiss"
 
@@ -29,17 +27,68 @@ def load_llm(huggingface_repo_id, HF_TOKEN):
     return llm
 
 def main():
+    # Add custom CSS for the footer only
+    st.markdown(
+        """
+        <style>
+        #MainMenu {visibility: hidden;}
+        footer {visibility: hidden;}
+        
+        /* Footer styles */
+        .footer-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: black;
+            z-index: 999;
+        }
+        
+        .custom-footer {
+            color: white;
+            text-align: center;
+            padding: 10px 0;
+            font-size: 14px;
+        }
+        
+        .custom-footer a {
+            color: white;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            padding: 5px 10px;
+        }
+        
+        .custom-footer a:hover {
+            color: #1E90FF;
+            text-decoration: underline;
+        }
+        
+        /* Add padding to main content to prevent footer overlap */
+        .block-container {
+            padding-bottom: 60px;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+    
     st.title("DocTalk – Your Digital Doctor, Always On Call!")
+    
+    # Initialize messages in session state
     if 'messages' not in st.session_state:
         st.session_state.messages = []
     
+    # Display chat messages
     for message in st.session_state.messages:
-        st.chat_message(message['role']).markdown(message['content'])
+        with st.chat_message(message['role']):
+            st.markdown(message['content'])
     
-    prompt = st.chat_input("Pass your prompt here")
-    if prompt:
-        st.chat_message('user').markdown(prompt)
-        st.session_state.messages.append({'role': 'user', 'content': prompt})
+    # Chat input
+    if prompt := st.chat_input("Pass your prompt here"):
+        # Display user message
+        with st.chat_message("user"):
+            st.markdown(prompt)
+        st.session_state.messages.append({"role": "user", "content": prompt})
         
         CUSTOM_PROMPT_TEMPLATE = """
         Use the pieces of information provided in the context to answer the user's question.
@@ -50,11 +99,11 @@ def main():
         Start the answer directly. No small talk please.
         """
         
+        # Updated Model Configuration - Using Meta's Llama 2
+        HUGGINGFACE_REPO_ID = "meta-llama/Llama-2-7b-chat-hf"
+        HF_TOKEN = "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"  # Make sure to use your valid token
         
-        HUGGINGFACE_REPO_ID = "deepseek-ai/deepseek-coder-6.7b-instruct"  
-        HF_TOKEN = "your hugging face token"  
-        
-        try: 
+        try:
             vectorstore = get_vectorstore()
             if vectorstore is None:
                 st.error("Failed to load the vector store")
@@ -67,16 +116,30 @@ def main():
                 chain_type_kwargs={'prompt': set_custom_prompt(CUSTOM_PROMPT_TEMPLATE)}
             )
             
-            response = qa_chain.invoke({'query': prompt})
-            result = response["result"]
-            source_documents = response["source_documents"]
-            result_to_show = result + "\nSource Docs:\n" + str(source_documents)
+            # Display assistant response
+            with st.chat_message("assistant"):
+                response = qa_chain.invoke({'query': prompt})
+                result = response["result"]
+                source_documents = response["source_documents"]
+                result_to_show = result + "\nSource Docs:\n" + str(source_documents)
+                st.markdown(result_to_show)
             
-            st.chat_message('assistant').markdown(result_to_show)
-            st.session_state.messages.append({'role': 'assistant', 'content': result_to_show})
+            st.session_state.messages.append({"role": "assistant", "content": result_to_show})
         
         except Exception as e:
             st.error(f"Error: {str(e)}")
+
+    # Footer
+    st.markdown(
+        """
+        <div class="footer-container">
+            <div class="custom-footer">
+                Designed by <a href="https://github.com/dattu20038" target="_blank"><b>Datta Srivathsava Gollapinni</b></a>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
 if __name__ == "__main__":
     main()
