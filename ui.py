@@ -119,7 +119,7 @@ def main():
             """
             
             HUGGINGFACE_REPO_ID = "deepseek-ai/deepseek-7b-chat"
-            HF_TOKEN = st.secrets["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"]
+            HF_TOKEN = "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"
             
             try:
                 vectorstore = get_vectorstore()
