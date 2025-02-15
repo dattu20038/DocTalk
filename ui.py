@@ -39,26 +39,20 @@ def main():
         footer {visibility: hidden;}
         
         .footer-container {
-            position: fixed;
-            bottom: 0;
-            left: 0;
+            position: relative;
             width: 100%;
             background-color: black;
-            z-index: 9999;
-        }
-        
-        .custom-footer {
-            color: white;
             text-align: center;
             padding: 10px 0;
+            color: white;
             font-size: 14px;
+            margin-top: 20px;
         }
         
         .custom-footer a {
             color: white;
             text-decoration: none;
             transition: all 0.3s ease;
-            padding: 5px 10px;
         }
         
         .custom-footer a:hover {
@@ -66,29 +60,10 @@ def main():
             text-decoration: underline;
         }
         
-        .stChatFloatingInputContainer {
-            bottom: 40px !important;
-        }
-        
-        .stChatMessage {
-            max-width: 800px;
-            margin: 1rem auto;
-        }
-        
-        .stMarkdown {
-            max-width: 800px;
-            margin: 0 auto;
-        }
-        
         .block-container {
             max-width: 800px !important;
             margin: 0 auto !important;
             padding: 20px;
-        }
-        
-        .element-container {
-            max-width: 800px;
-            margin: 0 auto;
         }
         
         .chat-container {
@@ -125,7 +100,7 @@ def main():
             with st.chat_message(message['role']):
                 st.markdown(message['content'])
 
-    if prompt := st.chat_input("Pass your prompt here"):
+    if prompt := st.chat_input("Pass your query here"):
         with st.chat_message("user"):
             st.markdown(prompt)
         st.session_state.messages.append({"role": "user", "content": prompt})
