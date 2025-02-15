@@ -21,17 +21,17 @@ def set_custom_prompt(custom_prompt_template):
 def load_llm(huggingface_repo_id, HF_TOKEN):
     llm = HuggingFaceEndpoint(
         repo_id=huggingface_repo_id,
-        model_kwargs={
-            "token": HF_TOKEN,
-            "max_length": 512,
-            "temperature": 0.7,
-            "top_p": 0.95,
-            "repetition_penalty": 1.15
-        }
+        token=HF_TOKEN,  
+        max_length=512,
+        temperature=0.7,
+        top_p=0.95,
+        repetition_penalty=1.15
     )
     return llm
 
 def main():
+    st.set_page_config(page_title="DocTalk", layout="wide")
+
     st.markdown(
         """
         <style>
@@ -81,34 +81,55 @@ def main():
         }
         
         .block-container {
-            max-width: 1000px;
-            padding-bottom: 60px;
-            margin: 0 auto;
+            max-width: 800px !important;
+            margin: 0 auto !important;
+            padding: 20px;
         }
         
         .element-container {
             max-width: 800px;
             margin: 0 auto;
         }
+        
+        .chat-container {
+            max-width: 800px;
+            margin: auto;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .stChatInput {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 800px !important;
+            max-width: 100%;
+        }
+        
         </style>
         """,
         unsafe_allow_html=True
     )
-    
+
     st.title("DocTalk – Your Digital Doctor, Always On Call!")
-    
+
     if 'messages' not in st.session_state:
         st.session_state.messages = []
-    
-    for message in st.session_state.messages:
-        with st.chat_message(message['role']):
-            st.markdown(message['content'])
-    
+
+    chat_container = st.container()
+
+    with chat_container:
+        for message in st.session_state.messages:
+            with st.chat_message(message['role']):
+                st.markdown(message['content'])
+
     if prompt := st.chat_input("Pass your prompt here"):
         with st.chat_message("user"):
             st.markdown(prompt)
         st.session_state.messages.append({"role": "user", "content": prompt})
-        
+
         CUSTOM_PROMPT_TEMPLATE = """
         Use the following pieces of context to answer the user's question about medical topics.
         If you don't know the answer, just say that you don't know, don't try to make up an answer.
@@ -121,10 +142,10 @@ def main():
         Include relevant medical details from the context but explain them in clear terms.
         If the question is outside your medical knowledge base, state that clearly.
         """
-        
+
         HUGGINGFACE_REPO_ID = "deepseek-ai/deepseek-7b-chat"
         HF_TOKEN = "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"
-        
+
         try:
             vectorstore = get_vectorstore()
             if vectorstore is None:
@@ -138,21 +159,21 @@ def main():
                 return_source_documents=True,
                 chain_type_kwargs={'prompt': set_custom_prompt(CUSTOM_PROMPT_TEMPLATE)}
             )
-            
+
             with st.chat_message("assistant"):
                 response = qa_chain.invoke({'query': prompt})
                 result = response["result"]
                 source_documents = response["source_documents"]
-                
+
                 sources_text = "\n\n**Source Documents:**\n"
                 for i, doc in enumerate(source_documents, 1):
                     sources_text += f"{i}. {str(doc)}\n"
-                
+
                 result_to_show = f"{result}\n{sources_text}"
                 st.markdown(result_to_show)
-            
+
             st.session_state.messages.append({"role": "assistant", "content": result_to_show})
-        
+
         except Exception as e:
             st.error(f"An error occurred: {str(e)}")
 
