@@ -24,12 +24,13 @@ def set_custom_prompt(custom_prompt_template):
 # Load the language model from Hugging Face
 def load_llm(huggingface_repo_id, HF_TOKEN=None):
     llm = HuggingFaceEndpoint(
-        repo_id=huggingface_repo_id,
-        task="text2text-generation", 
-        temperature=0.5,
+        repo_id="facebook/bart-large-cnn",  # Using BART model specifically for generation
         model_kwargs={
             "max_length": 512,
-            
+            "do_sample": True,
+            "temperature": 0.5,
+            "top_p": 0.95,
+            "top_k": 50,
         }
     )
     return llm
@@ -108,17 +109,13 @@ def main():
         Start the answer directly. No small talk please.
         """
         
-        # Updated Model Configuration - Using T5 small for faster inference
-        HUGGINGFACE_REPO_ID = "google/t5-small"
-        HF_TOKEN = None  # Not required for this model
-        
         try:
             vectorstore = get_vectorstore()
             if vectorstore is None:
                 st.error("Failed to load the vector store")
             
             qa_chain = RetrievalQA.from_chain_type(
-                llm=load_llm(HUGGINGFACE_REPO_ID, HF_TOKEN),
+                llm=load_llm(None),  # Removed unused parameters
                 chain_type="stuff",
                 retriever=vectorstore.as_retriever(search_kwargs={'k': 3}),
                 return_source_documents=True,
