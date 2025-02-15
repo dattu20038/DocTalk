@@ -6,26 +6,34 @@ from langchain_community.vectorstores import FAISS
 from langchain_core.prompts import PromptTemplate
 from langchain_huggingface import HuggingFaceEndpoint
 
+# Path to the FAISS vector store
 DB_FAISS_PATH = "vectorstore/db_faiss"
 
+# Cache the vector store to avoid reloading it on every interaction
 @st.cache_resource
 def get_vectorstore():
     embedding_model = HuggingFaceEmbeddings(model_name='sentence-transformers/all-MiniLM-L6-v2')
     db = FAISS.load_local(DB_FAISS_PATH, embedding_model, allow_dangerous_deserialization=True)
     return db
 
+# Define a custom prompt template
 def set_custom_prompt(custom_prompt_template):
     prompt = PromptTemplate(template=custom_prompt_template, input_variables=["context", "question"])
     return prompt
 
-def load_llm(huggingface_repo_id, HF_TOKEN):
+# Load the language model from Hugging Face
+def load_llm(huggingface_repo_id, HF_TOKEN=None):
     llm = HuggingFaceEndpoint(
         repo_id=huggingface_repo_id,
         temperature=0.5,
-        model_kwargs={"token": HF_TOKEN, "max_length": 512}
+        model_kwargs={
+            "max_length": 512,
+            "task": "text-generation"  # Explicitly specify the task
+        }
     )
     return llm
 
+# Main function
 def main():
     # Add custom CSS for the footer only
     st.markdown(
@@ -99,9 +107,9 @@ def main():
         Start the answer directly. No small talk please.
         """
         
-        # Updated Model Configuration - Using Meta's Llama 2
-        HUGGINGFACE_REPO_ID = "meta-llama/Llama-2-7b-chat-hf"
-        HF_TOKEN = "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"  # Make sure to use your valid token
+        # Updated Model Configuration - Using Google's FLAN-T5-Base
+        HUGGINGFACE_REPO_ID = "google/flan-t5-base"
+        HF_TOKEN = None  # Not required for this model
         
         try:
             vectorstore = get_vectorstore()
@@ -128,7 +136,7 @@ def main():
         
         except Exception as e:
             st.error(f"Error: {str(e)}")
-
+    
     # Footer
     st.markdown(
         """
