@@ -24,12 +24,11 @@ def set_custom_prompt(custom_prompt_template):
 # Load the language model from Hugging Face
 def load_llm(huggingface_repo_id, HF_TOKEN=None):
     llm = HuggingFaceEndpoint(
-        repo_id="facebook/bart-large-cnn",
-        temperature=0.5,
-        top_p=0.95,
-        top_k=50,
-        max_length=512,
-        model_kwargs={}  # Empty dict since we moved parameters out
+        repo_id="microsoft/phi-1",
+        task="text-generation",
+        temperature=0.7,
+        max_new_tokens=512,
+        model_kwargs={"max_length": 512}
     )
     return llm
 
