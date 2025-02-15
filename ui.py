@@ -21,7 +21,6 @@ def set_custom_prompt(custom_prompt_template):
 def load_llm(huggingface_repo_id, HF_TOKEN):
     llm = HuggingFaceEndpoint(
         repo_id=huggingface_repo_id,
-        temperature=0.7,
         model_kwargs={
             "token": HF_TOKEN,
             "max_length": 512,
@@ -46,7 +45,6 @@ def main():
             width: 100%;
             background-color: black;
             z-index: 9999;
-            pointer-events: auto;
         }
         
         .custom-footer {
@@ -54,7 +52,6 @@ def main():
             text-align: center;
             padding: 10px 0;
             font-size: 14px;
-            margin-bottom: 0;
         }
         
         .custom-footer a {
@@ -69,89 +66,95 @@ def main():
             text-decoration: underline;
         }
         
-        .main-container {
-            margin-bottom: 60px;
+        .stChatFloatingInputContainer {
+            bottom: 40px !important;
         }
         
-        .stChatFloatingInputContainer {
-            bottom: 60px !important;
+        .stChatMessage {
+            max-width: 800px;
+            margin: 1rem auto;
+        }
+        
+        .stMarkdown {
+            max-width: 800px;
+            margin: 0 auto;
         }
         
         .block-container {
-            padding-bottom: 80px;
-            margin-bottom: 60px;
+            max-width: 1000px;
+            padding-bottom: 60px;
+            margin: 0 auto;
         }
         
         .element-container {
-            z-index: 1;
+            max-width: 800px;
+            margin: 0 auto;
         }
         </style>
         """,
         unsafe_allow_html=True
     )
     
-    with st.container():
-        st.title("DocTalk – Your Digital Doctor, Always On Call!")
+    st.title("DocTalk – Your Digital Doctor, Always On Call!")
+    
+    if 'messages' not in st.session_state:
+        st.session_state.messages = []
+    
+    for message in st.session_state.messages:
+        with st.chat_message(message['role']):
+            st.markdown(message['content'])
+    
+    if prompt := st.chat_input("Pass your prompt here"):
+        with st.chat_message("user"):
+            st.markdown(prompt)
+        st.session_state.messages.append({"role": "user", "content": prompt})
         
-        if 'messages' not in st.session_state:
-            st.session_state.messages = []
+        CUSTOM_PROMPT_TEMPLATE = """
+        Use the following pieces of context to answer the user's question about medical topics.
+        If you don't know the answer, just say that you don't know, don't try to make up an answer.
+        Keep your answers focused on the medical information provided in the context.
         
-        for message in st.session_state.messages:
-            with st.chat_message(message['role']):
-                st.markdown(message['content'])
+        Context: {context}
+        Question: {question}
         
-        if prompt := st.chat_input("Pass your prompt here"):
-            with st.chat_message("user"):
-                st.markdown(prompt)
-            st.session_state.messages.append({"role": "user", "content": prompt})
+        Answer the question directly and professionally, like a medical professional would.
+        Include relevant medical details from the context but explain them in clear terms.
+        If the question is outside your medical knowledge base, state that clearly.
+        """
+        
+        HUGGINGFACE_REPO_ID = "deepseek-ai/deepseek-7b-chat"
+        HF_TOKEN = "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"
+        
+        try:
+            vectorstore = get_vectorstore()
+            if vectorstore is None:
+                st.error("Failed to load the vector store")
+                return
             
-            CUSTOM_PROMPT_TEMPLATE = """
-            Use the following pieces of context to answer the user's question about medical topics.
-            If you don't know the answer, just say that you don't know, don't try to make up an answer.
-            Keep your answers focused on the medical information provided in the context.
+            qa_chain = RetrievalQA.from_chain_type(
+                llm=load_llm(HUGGINGFACE_REPO_ID, HF_TOKEN),
+                chain_type="stuff",
+                retriever=vectorstore.as_retriever(search_kwargs={'k': 3}),
+                return_source_documents=True,
+                chain_type_kwargs={'prompt': set_custom_prompt(CUSTOM_PROMPT_TEMPLATE)}
+            )
             
-            Context: {context}
-            Question: {question}
-            
-            Answer the question directly and professionally, like a medical professional would.
-            Include relevant medical details from the context but explain them in clear terms.
-            If the question is outside your medical knowledge base, state that clearly.
-            """
-            
-            HUGGINGFACE_REPO_ID = "deepseek-ai/deepseek-7b-chat"
-            HF_TOKEN = "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"
-            
-            try:
-                vectorstore = get_vectorstore()
-                if vectorstore is None:
-                    st.error("Failed to load the vector store")
-                    return
+            with st.chat_message("assistant"):
+                response = qa_chain.invoke({'query': prompt})
+                result = response["result"]
+                source_documents = response["source_documents"]
                 
-                qa_chain = RetrievalQA.from_chain_type(
-                    llm=load_llm(HUGGINGFACE_REPO_ID, HF_TOKEN),
-                    chain_type="stuff",
-                    retriever=vectorstore.as_retriever(search_kwargs={'k': 3}),
-                    return_source_documents=True,
-                    chain_type_kwargs={'prompt': set_custom_prompt(CUSTOM_PROMPT_TEMPLATE)}
-                )
+                sources_text = "\n\n**Source Documents:**\n"
+                for i, doc in enumerate(source_documents, 1):
+                    sources_text += f"{i}. {str(doc)}\n"
                 
-                with st.chat_message("assistant"):
-                    response = qa_chain.invoke({'query': prompt})
-                    result = response["result"]
-                    source_documents = response["source_documents"]
-                    
-                    sources_text = "\n\n**Source Documents:**\n"
-                    for i, doc in enumerate(source_documents, 1):
-                        sources_text += f"{i}. {str(doc)}\n"
-                    
-                    result_to_show = f"{result}\n{sources_text}"
-                    st.markdown(result_to_show)
-                
-                st.session_state.messages.append({"role": "assistant", "content": result_to_show})
+                result_to_show = f"{result}\n{sources_text}"
+                st.markdown(result_to_show)
             
-            except Exception as e:
-                st.error(f"An error occurred: {str(e)}")
-                st.error("Please make sure your HF_TOKEN is correctly set in Streamlit secrets.")
+            st.session_state.messages.append({"role": "assistant", "content": result_to_show})
+        
+        except Exception as e:
+            st.error(f"An error occurred: {str(e)}")
 
     st.markdown(
         """
