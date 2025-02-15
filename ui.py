@@ -28,7 +28,7 @@ def load_llm(huggingface_repo_id, HF_TOKEN=None):
         temperature=0.5,
         model_kwargs={
             "max_length": 512,
-            "task": "text-generation"  # Explicitly specify the task
+            
         }
     )
     return llm
