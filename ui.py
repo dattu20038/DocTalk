@@ -137,7 +137,7 @@ def main():
         """
         <div class="footer-container">
             <div class="custom-footer">
-                Designed by <a href="https://github.com/dattu20038" target="_blank"><b>Datta Srivathsava Gollapinni</b></a>
+                Designed by <a href="https://portfolio-main-sigma-two.vercel.app/" target="_blank"><b>Datta Srivathsava Gollapinni</b></a>
             </div>
         </div>
         """,
