@@ -4,12 +4,11 @@ from langchain.embeddings import HuggingFaceEmbeddings
 from langchain.chains import RetrievalQA
 from langchain_community.vectorstores import FAISS
 from langchain_core.prompts import PromptTemplate
-from langchain.llms import HuggingFaceHub
+from langchain_huggingface import HuggingFaceEndpoint
 
 # Path to the FAISS vector store
 DB_FAISS_PATH = "vectorstore/db_faiss"
 
-# Cache the vector store to avoid reloading it on every interaction
 @st.cache_resource
 def get_vectorstore():
     embedding_model = HuggingFaceEmbeddings(model_name='sentence-transformers/all-MiniLM-L6-v2')
@@ -21,13 +20,15 @@ def set_custom_prompt(custom_prompt_template):
     prompt = PromptTemplate(template=custom_prompt_template, input_variables=["context", "question"])
     return prompt
 
-# Load a model that doesn't require authentication
 def load_llm():
-    llm = HuggingFaceHub(
-        repo_id="mistralai/Mistral-7B-Instruct-v0.1",  # No API key required
-        model_kwargs={"temperature": 0.7, "max_length": 512}
+    return HuggingFaceEndpoint(
+        repo_id="mistralai/Mistral-7B-Instruct-v0.1",
+        
+        temperature=0.7,
+        max_new_tokens=512,
+        model_kwargs={"max_length": 512}
     )
-    return llm
+    
 
 # Main function
 def main():
