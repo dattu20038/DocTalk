@@ -24,7 +24,7 @@ def set_custom_prompt(custom_prompt_template):
 # Load the language model from Hugging Face
 def load_llm(huggingface_repo_id, HF_TOKEN=None):
     llm = HuggingFaceEndpoint(
-        repo_id="microsoft/phi-1",
+        repo_id="tiiuae/falcon-7b-instruct",
         task="text-generation",
         temperature=0.7,
         max_new_tokens=512,
