@@ -1,4 +1,4 @@
-# DocTalk - Your Digital Doctor, Always On Call! 🏥
+# DocTalk - Your Digital Doctor, Always On Call! 
 
 DocTalk is an intelligent medical chatbot powered by the Mistral-7B-Instruct model and LangChain. It provides accurate medical information by retrieving relevant context from uploaded medical documents using FAISS vector storage and semantic search.
 
