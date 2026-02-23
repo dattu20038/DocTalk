@@ -5,9 +5,6 @@ from langchain.chains import RetrievalQA
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
 
-## Uncomment the following files if you're not using pipenv as your virtual environment manager
-#from dotenv import load_dotenv, find_dotenv
-#load_dotenv(find_dotenv())
 
 
 # Step 1: Setup LLM (Mistral with HuggingFace)
